@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.spring.webflow.domain.ShadowUser">
+
+    <resultMap id="ShadowUserResultMap" type="ShadowUser">
+        <result property="id" column="id" />
+        <result property="firstName" column="first_name" />
+        <result property="lastName" column="last_name" />
+        <result property="age" column="age" />
+    </resultMap>
+
+    <select id="selectAllShadowUsers" resultMap="ShadowUserResultMap">
+        SELECT * 
+        FROM SHADOW_USER
+        WHERE STATUS = true;
+    </select>
+    
+    <select id="selectUser" resultMap="ShadowUserResultMap">
+        SELECT * 
+        FROM SHADOW_USER
+        WHERE FIRST_NAME = #{firstName}
+        AND LAST_NAME = #{lastName}
+    </select>
+    
+    <insert id="createUser" parameterType="ShadowUser" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO SHADOW_USER (FIRST_NAME, LAST_NAME, AGE, STATUS) 
+        VALUES (#{firstName}, #{lastName}, #{age}, #{status});
+    </insert>
+    
+    <update id="deleteUser" parameterType="integer">
+    	UPDATE SHADOW_USER
+   		SET STATUS = false
+ 		WHERE ID = #{userId};   	
+    </update>
+    
+    <update id="updateUser" parameterType="ShadowUser">
+    	UPDATE SHADOW_USER 
+    	SET FIRST_NAME = #{firstName}, 
+    	LAST_NAME = #{lastName}, 
+    	AGE = #{age} 
+    	WHERE ID = #{id};
+    </update> 
+    
+  	<select id="findOneUser" resultMap="ShadowUserResultMap">
+  		SELECT * 
+  		FROM SHADOW_USER 
+  		WHERE ID = #{userId};
+  	</select> 
+    
+</mapper>

@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow xmlns="http://www.springframework.org/schema/webflow"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.springframework.org/schema/webflow
+        http://www.springframework.org/schema/webflow/spring-webflow-2.4.xsd" >
+    
+    <var name="loginCredentials" class="com.spring.webflow.domain.Logincredential"/>    
+    <var name="shadowUserModel" class="com.spring.webflow.domain.ShadowUser"/>
+    
+    <!-- Display the login page -->
+        <view-state id="displayLoginView" view="/WEB-INF/views/display_login.jsp" model="loginCredentials">
+            <transition on="loginCredentialsEntered" to="performLoginAction"/>
+        </view-state>
+        
+        <action-state id="performLoginAction">
+            <evaluate expression="shadowAction.loginCredentials(loginCredentials, flowRequestContext)"/> 
+            <transition on="success" to="displayUserHome"/>             
+            <transition on="error" to="displayLoginView"/>
+        </action-state>    
+               
+        <!-- <view-state id="displayLoginErrorView" view="/WEB-INF/views/display_login_error.jsp"/> -->
+    
+    <!-- Shadow User Main Actions/Flows -->
+    
+    <!-- View User Home -->
+	    <view-state id="displayUserHome" view="/WEB-INF/views/user_home.jsp">
+	    	<transition on="createUsersPage" to="displayCreateUsersView"/>
+	    	<transition on="viewUsersPage" to="viewUsers"/>
+	    	<transition on="logout" to="displayLoginView"/>
+	    </view-state>        
+    
+    <!-- View All Users -->        
+	  	<action-state id="viewUsers">
+	  	 	<evaluate expression="shadowAction.viewUsers(flowRequestContext)" result="flowScope.shadowUserModel" /> 
+			<transition to="displayAllUsers"/>
+			<transition on="error" to="displayUserHome"/>			
+		</action-state>           
+	  
+	   <view-state id="displayAllUsers" model="shadowUserModel" view="/WEB-INF/views/view_users.jsp"> 
+	   		<transition on="updateUser" to="updateUserAction"/>
+	   		<transition on="deleteUser" to="deleteUserAction"/>
+	   </view-state>
+   
+ 	<!-- Create User -->
+ 		<action-state id="displayCreateUsersView">
+ 			<evaluate expression="shadowAction.userAction('create', 0, flowRequestContext)" /> 
+ 			<transition to="displayUserActionPage"/>
+        </action-state>
+ 	
+        <view-state id="displayUserActionPage" view="/WEB-INF/views/create_user.jsp" model="shadowUserModel">
+            <transition on="createUserForm" to="performCreateUserAction"/>
+            <transition on="updateUserForm" to="performUpdateUserAction"/>
+        </view-state>
+         
+        <action-state id="performCreateUserAction">
+            <evaluate expression="shadowAction.createUser(shadowUserModel, flowRequestContext)" /> 
+            <transition on="success" to="displayCreateUserSuccessView"/>             
+            <transition on="error" to="displayCreateUserErrorView"/>
+        </action-state>
+         
+        <view-state id="displayCreateUserSuccessView" view="/WEB-INF/views/create_user.jsp"/>         
+        <view-state id="displayCreateUserErrorView" view="/WEB-INF/views/create_user.jsp"/>
+        
+	<!-- Update User -->
+	
+		<action-state id="updateUserAction">
+			<evaluate expression="shadowAction.userAction('update', requestParameters.userId, flowRequestContext)" /> 
+ 			<transition to="displayUserActionPage" />
+        </action-state>
+        
+	<!-- Delete User -->
+	
+		<action-state id="deleteUserAction">
+			<evaluate expression="shadowAction.deleteUserAction(requestParameters.userId, flowRequestContext)" /> 
+ 			<transition on="success" to="displayAllUsers" />
+ 			<transition on="error" to="displayAllUsers" />
+        </action-state>
+        
+        <action-state id="performUpdateUserAction">
+            <evaluate expression="shadowAction.updateUser(shadowUserModel, flowRequestContext)" /> 
+            <transition on="success" to="displayCreateUserSuccessView"/>             
+            <transition on="error" to="displayCreateUserErrorView"/>
+        </action-state>
+	    
+	<!-- GLOBAL TRANSITIONS (via to Home) -->
+	
+		<global-transitions>
+			<transition on="gotoHome" to="displayUserHome" />
+		</global-transitions>
+       
+        
+	
+ </flow>
